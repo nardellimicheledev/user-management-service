@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="user-management-service"/>
+
+    <!-- ===== CONSOLE dev/test: pattern colorato e leggibile ===== -->
+    <springProfile name="!prod">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <logger name="org.hibernate.SQL"           level="DEBUG"/>
+        <logger name="org.hibernate.orm.jdbc.bind" level="TRACE"/>
+    </springProfile>
+
+    <!-- ===== CONSOLE prod: JSON strutturato ===== -->
+    <springProfile name="prod">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>{ "ts":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}", "level":"%level", "app":"%property{APP_NAME}", "thread":"%thread", "logger":"%logger{36}", "msg":"%replace(%msg){'\"','\\\"'}" }%n</pattern>
+            </encoder>
+        </appender>
+
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/${APP_NAME}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/${APP_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>50MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>500MB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <pattern>{ "ts":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}", "level":"%level", "app":"%property{APP_NAME}", "thread":"%thread", "logger":"%logger{36}", "msg":"%replace(%msg){'\"','\\\"'}" }%n</pattern>
+            </encoder>
+        </appender>
+    </springProfile>
+
+    <!-- ===== LIVELLI ===== -->
+    <logger name="it.intesigroup.interview.usermanagement" level="INFO"/>
+    <logger name="org.springframework.security"            level="WARN"/>
+
+    <!-- ===== ROOT ===== -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>
